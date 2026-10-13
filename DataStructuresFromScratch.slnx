@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/Collections/">
+    <Project Path="EyadLinkedList/EyadLinkedList.csproj" />
+  </Folder>
+  <Folder Name="/Tests/" />
+  <Folder Name="/Tests/CollectionsTester/">
+    <Project Path="CollectionsTester/CollectionsTester.csproj" />
+  </Folder>
+</Solution>
