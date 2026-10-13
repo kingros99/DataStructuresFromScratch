@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\EyadLinkedList\EyadLinkedList.csproj" />
+    <ProjectReference Include="..\EyadStackArray\EyadStackArray.csproj" />
   </ItemGroup>
 
 </Project>
