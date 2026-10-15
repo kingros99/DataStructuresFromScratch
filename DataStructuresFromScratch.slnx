@@ -2,6 +2,7 @@
   <Folder Name="/Collections/">
     <Project Path="EyadLinkedList/EyadLinkedList.csproj" />
     <Project Path="EyadStackArray/EyadStackArray.csproj" Id="669d855f-23e6-4d20-9233-1968aa48f643" />
+    <Project Path="StackLinkedList/EyadStackLinkedList.csproj" Id="d4f4c8b4-849e-41b8-94ee-084ce9ba8db1" />
   </Folder>
   <Folder Name="/Tests/" />
   <Folder Name="/Tests/CollectionsTester/">
