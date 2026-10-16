@@ -86,7 +86,7 @@
 
         public void Display()
         {
-            CheckEmptyErrorIf();
+            
 
 
             Console.Write("Queue elements: ");
