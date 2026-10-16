@@ -1,5 +1,6 @@
 ﻿
 using DataStructures;
+using DataStructures.Queues;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -49,12 +50,63 @@ namespace CollectionsTester
                 Check(name, true);
 
             }
-            catch 
+            catch
             {
                 Check(name, false);
 
             }
         }
+        static void Test(string name, Action test)
+        {
+            try
+            {
+                test();
+                Console.WriteLine($"[PASS] {name}");
+                passed++;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[FAIL] {name}");
+                Console.WriteLine($"       {ex.Message}");
+                failed++;
+            }
+        }
+
+        static void Assert(bool condition, string message)
+        {
+            if (!condition)
+                throw new Exception(message);
+        }
+
+        static void AssertEqual<T>(T expected, T actual, string message)
+        {
+            if (!Equals(expected, actual))
+            {
+                throw new Exception(
+                    $"{message} | Expected: {expected}, Actual: {actual}"
+                );
+            }
+        }
+
+        static void AssertThrows<TException>(Action action)
+            where TException : Exception
+        {
+            try
+            {
+                action();
+            }
+            catch (TException)
+            {
+                return;
+            }
+
+            throw new Exception(
+                $"Expected {typeof(TException).Name} was not thrown."
+            );
+        }
+
+
+
 
         #region Linked List
         static void CheckContents(
@@ -85,7 +137,7 @@ namespace CollectionsTester
             }
 
             Check(name, correct);
-        } 
+        }
         #endregion
 
         static void Main(string[] args)
@@ -288,9 +340,310 @@ namespace CollectionsTester
             //Console.WriteLine($"Total:  {passed + failed}");
             //Console.WriteLine("==============================");
             #endregion
-      
-        
-        
+
+
+
+
+
+
+
+         Console.WriteLine("========== LINEAR QUEUE TESTS ==========\n");
+
+                // 1. Construction
+
+                Test("New queue is empty", () =>
+                {
+                    var q = new SimpleQueue<int>();
+                    Assert(q.IsEmpty, "Queue should be empty.");
+                });
+
+                Test("Zero capacity throws", () =>
+                {
+                    AssertThrows<ArgumentOutOfRangeException>(
+                        () => new SimpleQueue<int>(0));
+                });
+
+                Test("Negative capacity throws", () =>
+                {
+                    AssertThrows<ArgumentOutOfRangeException>(
+                        () => new SimpleQueue<int>(-1));
+                });
+
+                // 2. Basic FIFO operations
+
+                Test("Enqueue one item", () =>
+                {
+                    var q = new SimpleQueue<int>();
+                    q.Enqueue(10);
+
+                    Assert(!q.IsEmpty, "Queue should not be empty.");
+                    AssertEqual(10, q.Peek(), "Incorrect front.");
+                });
+
+                Test("FIFO order", () =>
+                {
+                    var q = new SimpleQueue<int>();
+                    q.Enqueue(10);
+                    q.Enqueue(20);
+                    q.Enqueue(30);
+
+                    AssertEqual(10, q.Peek(), "Expected 10.");
+                    q.Dequeue();
+
+                    AssertEqual(20, q.Peek(), "Expected 20.");
+                    q.Dequeue();
+
+                    AssertEqual(30, q.Peek(), "Expected 30.");
+                });
+
+                Test("Dequeue last item makes queue empty", () =>
+                {
+                    var q = new SimpleQueue<int>();
+                    q.Enqueue(10);
+                    q.Dequeue();
+
+                    Assert(q.IsEmpty, "Queue should be empty.");
+                });
+
+                // 3. Empty queue exceptions
+
+                Test("Dequeue on empty throws", () =>
+                {
+                    var q = new SimpleQueue<int>();
+
+                    AssertThrows<InvalidOperationException>(
+                        () => q.Dequeue());
+                });
+
+                Test("Peek on empty throws", () =>
+                {
+                    var q = new SimpleQueue<int>();
+
+                    AssertThrows<InvalidOperationException>(
+                        () => q.Peek());
+                });
+
+                Test("Display on empty throws", () =>
+                {
+                    var q = new SimpleQueue<int>();
+
+                    AssertThrows<InvalidOperationException>(
+                        () => q.Display());
+                });
+
+                // 4. Full queue exceptions
+
+                Test("Enqueue beyond capacity throws", () =>
+                {
+                    var q = new SimpleQueue<int>(3);
+                    q.Enqueue(1);
+                    q.Enqueue(2);
+                    q.Enqueue(3);
+
+                    AssertThrows<InvalidOperationException>(
+                        () => q.Enqueue(4));
+                });
+
+                Test("Failed enqueue preserves existing items", () =>
+                {
+                    var q = new SimpleQueue<int>(2);
+                    q.Enqueue(10);
+                    q.Enqueue(20);
+
+                    AssertThrows<InvalidOperationException>(
+                        () => q.Enqueue(30));
+
+                    AssertEqual(10, q.Peek(), "Front changed.");
+                    q.Dequeue();
+
+                    AssertEqual(20, q.Peek(), "Second item was lost.");
+                });
+
+                // 5. Linear queue behavior:
+                // Freed positions cannot be reused until fully empty.
+
+                Test("Cannot reuse freed position before empty", () =>
+                {
+                    var q = new SimpleQueue<int>(3);
+                    q.Enqueue(1);
+                    q.Enqueue(2);
+                    q.Enqueue(3);
+
+                    q.Dequeue();
+
+                    AssertEqual(2, q.Peek(), "Front should be 2.");
+
+                    AssertThrows<InvalidOperationException>(
+                        () => q.Enqueue(4));
+                });
+
+                Test("Cannot enqueue after partial dequeue at array end", () =>
+                {
+                    var q = new SimpleQueue<int>(3);
+                    q.Enqueue(1);
+                    q.Enqueue(2);
+                    q.Enqueue(3);
+
+                    q.Dequeue();
+                    q.Dequeue();
+
+                    AssertEqual(3, q.Peek(), "Front should be 3.");
+
+                    AssertThrows<InvalidOperationException>(
+                        () => q.Enqueue(4));
+                });
+
+                Test("Can enqueue again after becoming completely empty", () =>
+                {
+                    var q = new SimpleQueue<int>(3);
+                    q.Enqueue(1);
+                    q.Enqueue(2);
+                    q.Enqueue(3);
+
+                    q.Dequeue();
+                    q.Dequeue();
+                    q.Dequeue();
+
+                    Assert(q.IsEmpty, "Queue should be empty.");
+
+                    q.Enqueue(99);
+
+                    AssertEqual(99, q.Peek(), "Refill failed.");
+                });
+
+                Test("Repeated complete fill and empty cycles", () =>
+                {
+                    var q = new SimpleQueue<int>(3);
+
+                    for (int cycle = 0; cycle < 10; cycle++)
+                    {
+                        q.Enqueue(cycle * 10 + 1);
+                        q.Enqueue(cycle * 10 + 2);
+                        q.Enqueue(cycle * 10 + 3);
+
+                        q.Dequeue();
+                        q.Dequeue();
+                        q.Dequeue();
+
+                        Assert(q.IsEmpty,
+                            $"Queue not empty after cycle {cycle}.");
+                    }
+                });
+
+                // 6. Capacity of one
+
+                Test("Capacity one accepts one item", () =>
+                {
+                    var q = new SimpleQueue<int>(1);
+                    q.Enqueue(10);
+
+                    AssertEqual(10, q.Peek(), "Incorrect front.");
+
+                    AssertThrows<InvalidOperationException>(
+                        () => q.Enqueue(20));
+                });
+
+                Test("Capacity one can be reused after empty", () =>
+                {
+                    var q = new SimpleQueue<int>(1);
+                    q.Enqueue(10);
+                    q.Dequeue();
+                    q.Enqueue(20);
+
+                    AssertEqual(20, q.Peek(), "Reuse failed.");
+                });
+
+                // 7. Special values and generic types
+
+                Test("Zero is a valid item", () =>
+                {
+                    var q = new SimpleQueue<int>();
+                    q.Enqueue(0);
+
+                    Assert(!q.IsEmpty, "Zero must not indicate empty.");
+                    AssertEqual(0, q.Peek(), "Zero was lost.");
+                });
+
+                Test("Negative values are valid items", () =>
+                {
+                    var q = new SimpleQueue<int>();
+                    q.Enqueue(-10);
+
+                    AssertEqual(-10, q.Peek(), "Negative value was lost.");
+                });
+
+                Test("String queue preserves FIFO", () =>
+                {
+                    var q = new SimpleQueue<string>();
+                    q.Enqueue("first");
+                    q.Enqueue("second");
+
+                    AssertEqual("first", q.Peek(), "Incorrect first string.");
+                    q.Dequeue();
+
+                    AssertEqual("second", q.Peek(), "Incorrect second string.");
+                });
+
+                Test("Null is a valid reference-type item", () =>
+                {
+                    var q = new SimpleQueue<string>();
+                    q.Enqueue(null);
+                    q.Enqueue("hello");
+
+                    Assert(!q.IsEmpty, "Queue should not be empty.");
+                    AssertEqual<string>(null, q.Peek(), "Expected null.");
+
+                    q.Dequeue();
+
+                    AssertEqual("hello", q.Peek(), "Expected hello.");
+                });
+
+                // 8. Display smoke test.
+                // Your reversed display order is intentionally preserved.
+
+                Test("Display populated queue does not throw", () =>
+                {
+                    var q = new SimpleQueue<int>();
+                    q.Enqueue(10);
+                    q.Enqueue(20);
+                    q.Enqueue(30);
+
+                    q.Display();
+                    Console.WriteLine();
+                });
+
+                // 9. Stress test with a linear queue
+
+                Test("FIFO stress test", () =>
+                {
+                    var q = new SimpleQueue<int>(100);
+
+                    for (int i = 1; i <= 100; i++)
+                        q.Enqueue(i);
+
+                    for (int i = 1; i <= 100; i++)
+                    {
+                        AssertEqual(i, q.Peek(),
+                            $"Incorrect front at item {i}.");
+
+                        q.Dequeue();
+                    }
+
+                    Assert(q.IsEmpty, "Queue should be empty after draining.");
+                });
+
+                // Results
+
+                Console.WriteLine("\n========== RESULTS ==========");
+                Console.WriteLine($"Passed: {passed}");
+                Console.WriteLine($"Failed: {failed}");
+                Console.WriteLine($"Total:  {passed + failed}");
+
+                Console.ReadKey();
+            }
         }
     }
-}
+
+    
+
+
