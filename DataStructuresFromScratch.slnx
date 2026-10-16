@@ -1,10 +1,7 @@
 <Solution>
-  <Folder Name="/Collections/">
-    <Project Path="EyadLinkedList/EyadLinkedList.csproj" />
-    <Project Path="EyadStackArray/EyadStackArray.csproj" Id="669d855f-23e6-4d20-9233-1968aa48f643" />
-  </Folder>
   <Folder Name="/Tests/" />
   <Folder Name="/Tests/CollectionsTester/">
     <Project Path="CollectionsTester/CollectionsTester.csproj" />
   </Folder>
+  <Project Path="DataStructures/DataStructures.csproj" Id="b5199e95-2fac-4bf5-a777-457ed9c18cd7" />
 </Solution>

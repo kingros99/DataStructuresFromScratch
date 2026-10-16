@@ -7,6 +7,8 @@ namespace EyadLinkedList
         private Node<T> tail;
         private int _Length;
 
+        public bool IsEmpty => head == null && tail == null;
+
         public int Length
         {
             get
@@ -45,7 +47,7 @@ namespace EyadLinkedList
 
         public void DeleteFromBegining()
         {
-            if (head is null)
+            if (IsEmpty)
             {
                 throw new InvalidOperationException("List is empty.");
             }
@@ -65,7 +67,7 @@ namespace EyadLinkedList
 
         public void DeleteFromEnd()
         {
-            if (tail is null)
+            if (IsEmpty)
             {
                 throw new InvalidOperationException("List is empty.");
             }
@@ -85,7 +87,7 @@ namespace EyadLinkedList
 
         public void insertAtBegining(T value)
         {
-            if (Length == 0)
+            if (IsEmpty)
             {
                 InsertAtEnd(value);
             }
@@ -191,15 +193,24 @@ namespace EyadLinkedList
         }
 
         // Replaces the node at the specified index without changing Length.
+        //need a look
+
         public void ReplaceAt(T value, int index)
         {
+            var newNode = new Node<T>(value);
+
+            if (index == 0 && this.IsEmpty)
+            {
+                insertAtBegining(value);
+                return;
+            }
             if (index < 0 || index > this.index)
             {
                 throw new ArgumentOutOfRangeException(
                     nameof(index), "Index is out of range.");
             }
 
-            var newNode = new Node<T>(value);
+ 
             var nodeToInsertAt = FindByIndex(index);
 
             newNode.next = nodeToInsertAt.next;
@@ -219,6 +230,7 @@ namespace EyadLinkedList
             {
                 tail = newNode;
             }
+         
             else if (index == 0)
             {
                 head = newNode;
